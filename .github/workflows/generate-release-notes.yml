@@ -1,18 +1,28 @@
-# .github/workflows/generate-release-notes.yml
 name: Generate Release Notes
 
 on:
   workflow_call:
     inputs:
+      repo:
+        required: true
+        type: string
       branch:
         required: true
         type: string
+      days:
+        required: false
+        type: number
+        default: 1
+      dry_run:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  generate-release-notes:
+  release-notes:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout caller repo
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -26,4 +36,9 @@ jobs:
       - name: Generate release notes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/generate_release_notes.py --branch ${{ inputs.branch }}
+        run: |
+          python scripts/generate_release_notes.py \
+            --repo "${{ inputs.repo }}" \
+            --branch "${{ inputs.branch }}" \
+            --days "${{ inputs.days }}" \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
